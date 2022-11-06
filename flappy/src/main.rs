@@ -3,6 +3,7 @@ use bracket_lib::prelude::*;
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 const FRAME_DURATION: f32 = 75.0;
+const PLAYER_X_POSITON: i32 = 10;
 
 enum GameMode {
     Menu,
@@ -46,15 +47,12 @@ impl State {
         ctx.print(0, 1, &format!("Score: {}", self.score));
 
         self.obstacle.render(ctx, self.player.x);
-        if self.player.x == self.obstacle.x {
+        if self.player.x > self.obstacle.x {
             self.score += 1;
-            self.obstacle = Obstacle::new(SCREEN_WIDTH, self.score);
+            self.obstacle = Obstacle::new(SCREEN_WIDTH + self.player.x, self.score);
         }
 
-        if self.player.y > SCREEN_HEIGHT
-            || self.player.y < 0
-            || self.obstacle.hit_obstacle(&self.player)
-        {
+        if self.player.y > SCREEN_HEIGHT || self.obstacle.hit_obstacle(&self.player) {
             self.mode = GameMode::End;
         }
     }
@@ -125,18 +123,20 @@ impl Player {
     }
 
     fn render(&self, ctx: &mut BTerm) {
-        ctx.set(self.x, self.y, YELLOW, BLACK, to_cp437('@'));
+        ctx.set(PLAYER_X_POSITON, self.y, YELLOW, BLACK, to_cp437('@'));
     }
 
     fn gravity_and_move(&mut self) {
         if self.velocity < 2.0 {
             self.velocity += 0.2;
         }
+
         self.y += self.velocity as i32;
-        self.x += 1;
         if self.y < 0 {
             self.y = 0;
         }
+
+        self.x += 1;
     }
 
     fn flap(&mut self) {
